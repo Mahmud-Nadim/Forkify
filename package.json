@@ -1,0 +1,27 @@
+{
+  "name": "forkify",
+  "version": "1.0.0",
+  "description": "This is a recipe search/bookmarking application. ",
+  "default": "index.html",
+  "scripts": {
+    "start": "parcel index.html",
+    "build": "parcel build index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mahmud-Nadim/Forkify.git"
+  },
+  "author": "Nadim",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mahmud-Nadim/Forkify/issues"
+  },
+  "homepage": "https://github.com/Mahmud-Nadim/Forkify#readme",
+  "devDependencies": {
+    "@parcel/transformer-sass": "^2.7.0",
+    "parcel": "^2.7.0"
+  },
+  "dependencies": {
+    "sass": "^1.26.10"
+  }
+}
