@@ -22,9 +22,9 @@
     "parcel": "^2.0.0-beta.1"
   },
   "dependencies": {
-    "sass": "^1.26.10",
     "core-js": "^3.6.5",
     "fractional": "^1.0.0",
-    "regenerator-runtime": "^0.13.7"
+    "regenerator-runtime": "^0.13.7",
+    "sass": "^1.26.10"
   }
 }
