@@ -445,7 +445,6 @@ var _icons = _interopRequireDefault(require("url:../img/icons.svg"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-console.log(_icons.default);
 const recipeContainer = document.querySelector(".recipe");
 
 const timeout = function (s) {
@@ -471,9 +470,11 @@ const renderSpinner = function (parentEl) {
 
 const showRecipe = async function () {
   try {
-    // 1. Loading recipe
+    const id = window.location.hash.slice(1);
+    if (!id) return; // 1. Loading recipe
+
     renderSpinner(recipeContainer);
-    const res = await fetch(`https://forkify-api.herokuapp.com/api/v2/recipes/5ed6604591c37cdc054bc886` // `https://forkify-api.herokuapp.com/api/v2/recipes/5ed6604591c37cdc054bce26`
+    const res = await fetch(`https://forkify-api.herokuapp.com/api/v2/recipes/${id}` // `https://forkify-api.herokuapp.com/api/v2/recipes/5ed6604591c37cdc054bce26`
     );
     const data = await res.json();
     if (!res.ok) throw new Error(`${data.message} (${res.status})`);
@@ -487,8 +488,8 @@ const showRecipe = async function () {
       servings: recipe.servings,
       cookingTime: recipe.cooking_time,
       ingredients: recipe.ingredients
-    };
-    console.log(recipe); // 2. Rendering recipe
+    }; // console.log(recipe);
+    // 2. Rendering recipe
 
     const markup = `
          <figure class="recipe__fig">
@@ -585,7 +586,7 @@ const showRecipe = async function () {
   }
 };
 
-showRecipe();
+["hashchange", "load"].forEach(ev => window.addEventListener(ev, showRecipe));
 },{"url:../img/icons.svg":"e20378ecabe1290eb832a884d6e8397f","core-js/modules/es.regexp.flags.js":"69c14483c7f90583888879597ac9d2d3","core-js/modules/web.immediate.js":"140df4f8e97a45c53c66fead1f5a9e92"}],"e20378ecabe1290eb832a884d6e8397f":[function(require,module,exports) {
 module.exports = require('./bundle-url').getBundleURL() + require('./relative-path')("f54b794f124020dd", "6bafa1d42cfbc0a2");
 },{"./bundle-url":"2146da1905b95151ed14d455c784e7b7","./relative-path":"1b9943ef25c7bbdf0dd1b9fa91880a6c"}],"2146da1905b95151ed14d455c784e7b7":[function(require,module,exports) {
