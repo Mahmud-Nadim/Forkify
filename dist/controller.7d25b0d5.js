@@ -131,10 +131,10 @@
       this[globalName] = mainExports;
     }
   }
-})({"257588f639bdf3bb73cae1102c59361d":[function(require,module,exports) {
+})({"c3e40cf568eaa078ac721d80014847a7":[function(require,module,exports) {
 var global = arguments[3];
 var HMR_HOST = null;
-var HMR_PORT = 8912;
+var HMR_PORT = 1234;
 var HMR_ENV_HASH = "d751713988987e9331980363e24189ce";
 module.bundle.HMR_BUNDLE_ID = "7d25b0d5995d0ee2f54b794f124020dd";
 /* global HMR_HOST, HMR_PORT, HMR_ENV_HASH */
@@ -445,23 +445,16 @@ var model = _interopRequireWildcard(require("./model"));
 
 var _recipeView = _interopRequireDefault(require("./views/recipeView"));
 
+var _helpers = require("./helpers");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-const recipeContainer = document.querySelector(".recipe");
-
-const timeout = function (s) {
-  return new Promise(function (_, reject) {
-    setTimeout(function () {
-      reject(new Error(`Request took too long! Timeout after ${s} second`));
-    }, s * 1000);
-  });
-}; // https://forkify-api.herokuapp.com/v2
+const recipeContainer = document.querySelector(".recipe"); // https://forkify-api.herokuapp.com/v2
 ///////////////////////////////////////
-
 
 const controlRecipes = async function () {
   try {
@@ -501,7 +494,7 @@ const controlRecipes = async function () {
 };
 
 ["hashchange", "load"].forEach(ev => window.addEventListener(ev, controlRecipes));
-},{"core-js/modules/es.regexp.flags.js":"69c14483c7f90583888879597ac9d2d3","core-js/modules/web.immediate.js":"140df4f8e97a45c53c66fead1f5a9e92","./model":"aabf248f40f7693ef84a0cb99f385d1f","./views/recipeView":"bcae1aced0301b01ccacb3e6f7dfede8"}],"69c14483c7f90583888879597ac9d2d3":[function(require,module,exports) {
+},{"core-js/modules/es.regexp.flags.js":"69c14483c7f90583888879597ac9d2d3","core-js/modules/web.immediate.js":"140df4f8e97a45c53c66fead1f5a9e92","./model":"aabf248f40f7693ef84a0cb99f385d1f","./views/recipeView":"bcae1aced0301b01ccacb3e6f7dfede8","./helpers":"0e8dcd8a4e1c61cf18f78e1c2563655d"}],"69c14483c7f90583888879597ac9d2d3":[function(require,module,exports) {
 var global = require('../internals/global');
 
 var DESCRIPTORS = require('../internals/descriptors');
@@ -1905,6 +1898,8 @@ var _regeneratorRuntime = require("regenerator-runtime");
 
 var _config = require("./config");
 
+var _helpers = require("./helpers");
+
 console.log(_regeneratorRuntime.async);
 const state = {
   recipe: {}
@@ -1913,10 +1908,7 @@ exports.state = state;
 
 const loadRecipe = async function (id) {
   try {
-    const res = await fetch(`${_config.API_URL}${id}` // `https://forkify-api.herokuapp.com/api/v2/recipes/5ed6604591c37cdc054bce26`
-    );
-    const data = await res.json();
-    if (!res.ok) throw new Error(`${data.message} (${res.status})`);
+    const data = await (0, _helpers.getJSON)(`${_config.API_URL}${id}`);
     const {
       recipe
     } = data.data;
@@ -1932,12 +1924,13 @@ const loadRecipe = async function (id) {
     };
     console.log(state.recipe);
   } catch (e) {
-    console.log(e);
+    // Temporary error handling
+    throw `${e} ❌`;
   }
 };
 
 exports.loadRecipe = loadRecipe;
-},{"regenerator-runtime":"e155e0d3930b156f86c48e8d05522b16","./config":"09212d541c5c40ff2bd93475a904f8de"}],"e155e0d3930b156f86c48e8d05522b16":[function(require,module,exports) {
+},{"regenerator-runtime":"e155e0d3930b156f86c48e8d05522b16","./config":"09212d541c5c40ff2bd93475a904f8de","./helpers":"0e8dcd8a4e1c61cf18f78e1c2563655d"}],"e155e0d3930b156f86c48e8d05522b16":[function(require,module,exports) {
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
  *
@@ -2699,10 +2692,38 @@ try {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.API_URL = void 0;
+exports.TIMEOUT_SEC = exports.API_URL = void 0;
 const API_URL = "https://forkify-api.herokuapp.com/api/v2/recipes/";
 exports.API_URL = API_URL;
-},{}],"bcae1aced0301b01ccacb3e6f7dfede8":[function(require,module,exports) {
+const TIMEOUT_SEC = 10;
+exports.TIMEOUT_SEC = TIMEOUT_SEC;
+},{}],"0e8dcd8a4e1c61cf18f78e1c2563655d":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getJSON = void 0;
+
+var _config = require("./config");
+
+const timeout = function (s) {
+  return new Promise(function (_, reject) {
+    setTimeout(function () {
+      reject(new Error(`Request took too long! Timeout after ${s} second`));
+    }, s * 1000);
+  });
+};
+
+const getJSON = async function (url) {
+  const res = await Promise.race([fetch(url), timeout(_config.TIMEOUT_SEC)]);
+  const data = await res.json();
+  if (!res.ok) throw new Error(`${data.message} (${res.status})`);
+  return data;
+};
+
+exports.getJSON = getJSON;
+},{"./config":"09212d541c5c40ff2bd93475a904f8de"}],"bcae1aced0301b01ccacb3e6f7dfede8":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2796,7 +2817,7 @@ class RecipeView {
         <div class="recipe__ingredients">
           <h2 class="heading--2">Recipe ingredients</h2>
           <ul class="recipe__ingredient-list">
-          ${this.#data.ingredients.map(ing => this._generateMarkupIngredient(ing))}).join("")}
+          ${this.#data.ingredients.map(ing => this._generateMarkupIngredient(ing))}
             
           </ul>
         </div>
@@ -3327,6 +3348,6 @@ Fraction.primeFactors = function(n)
 
 module.exports.Fraction = Fraction
 
-},{}]},{},["257588f639bdf3bb73cae1102c59361d","5985c56c487cf15770880ece02656bf4","175e469a7ea7db1c8c0744d04372621f"], null)
+},{}]},{},["c3e40cf568eaa078ac721d80014847a7","5985c56c487cf15770880ece02656bf4","175e469a7ea7db1c8c0744d04372621f"], null)
 
 //# sourceMappingURL=controller.7d25b0d5.js.map
