@@ -489,11 +489,26 @@ const controlRecipes = async function () {
 
     _recipeView.default.render(model.state.recipe);
   } catch (e) {
-    console.log(e);
+    _recipeView.default.renderError();
   }
 };
 
-["hashchange", "load"].forEach(ev => window.addEventListener(ev, controlRecipes));
+const controlSearchResults = async function () {
+  try {
+    await model.loadSearchResults("pizza");
+    console.log(model.state.search.results);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+controlSearchResults();
+
+const init = function () {
+  _recipeView.default.addHandlerRender(controlRecipes);
+};
+
+init();
 },{"core-js/modules/es.regexp.flags.js":"69c14483c7f90583888879597ac9d2d3","core-js/modules/web.immediate.js":"140df4f8e97a45c53c66fead1f5a9e92","./model":"aabf248f40f7693ef84a0cb99f385d1f","./views/recipeView":"bcae1aced0301b01ccacb3e6f7dfede8","./helpers":"0e8dcd8a4e1c61cf18f78e1c2563655d"}],"69c14483c7f90583888879597ac9d2d3":[function(require,module,exports) {
 var global = require('../internals/global');
 
@@ -1892,7 +1907,7 @@ $({
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.state = exports.loadRecipe = void 0;
+exports.state = exports.loadSearchResults = exports.loadRecipe = void 0;
 
 var _regeneratorRuntime = require("regenerator-runtime");
 
@@ -1902,7 +1917,11 @@ var _helpers = require("./helpers");
 
 console.log(_regeneratorRuntime.async);
 const state = {
-  recipe: {}
+  recipe: {},
+  search: {
+    query: "",
+    results: []
+  }
 };
 exports.state = state;
 
@@ -1930,6 +1949,26 @@ const loadRecipe = async function (id) {
 };
 
 exports.loadRecipe = loadRecipe;
+
+const loadSearchResults = async function (query) {
+  try {
+    state.search.query = query;
+    const data = await (0, _helpers.getJSON)(`${_config.API_URL}?search=${query}`);
+    state.search.results = data.data.recipes.map(rec => {
+      return {
+        id: rec.id,
+        title: rec.title,
+        publisher: rec.publisher,
+        image: rec.image_url
+      };
+    });
+  } catch (err) {
+    console.log(`${e} ❌`);
+    throw err;
+  }
+};
+
+exports.loadSearchResults = loadSearchResults;
 },{"regenerator-runtime":"e155e0d3930b156f86c48e8d05522b16","./config":"09212d541c5c40ff2bd93475a904f8de","./helpers":"0e8dcd8a4e1c61cf18f78e1c2563655d"}],"e155e0d3930b156f86c48e8d05522b16":[function(require,module,exports) {
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
@@ -2740,6 +2779,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 class RecipeView {
   #parentElement = document.querySelector(".recipe");
   #data;
+  #errorMessage = "We could not find that recipe. Please try another one.";
+  #message = "";
 
   render(data) {
     this.#data = data;
@@ -2762,8 +2803,47 @@ class RecipeView {
           </svg>
         </div>
 `;
+    this.#clear();
     this.#parentElement.insertAdjacentHTML("afterbegin", markup);
   };
+
+  renderError() {
+    let message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.#errorMessage;
+    const markup = `
+         <div class="error">
+            <div>
+              <svg>
+                <use href="${_icons.default}#icon-alert-triangle"></use>
+              </svg>
+            </div>
+            <p>${message}</p>
+          </div> -->
+
+`;
+    this.#clear();
+    this.#parentElement.insertAdjacentHTML("afterbegin", markup);
+  }
+
+  renderMessage() {
+    let message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.#message;
+    const markup = `
+         <div class="error">
+            <div>
+              <svg>
+                <use href="${_icons.default}#icon-smile"></use>
+              </svg>
+            </div>
+            <p>${message}</p>
+          </div> -->
+
+`;
+    this.#clear();
+    this.#parentElement.insertAdjacentHTML("afterbegin", markup);
+  }
+
+  addHandlerRender(handler) {
+    ["hashchange", "load"].forEach(ev => window.addEventListener(ev, handler));
+  }
 
   _generateMarkup() {
     return `
