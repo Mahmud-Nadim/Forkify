@@ -84,14 +84,14 @@ const showRecipe = async function() {
               <svg class="recipe__icon">
                 <use href="src/img/icons.svg#icon-check"></use>
               </svg>
-              <div class="recipe__quantity">1000</div>
+              <div class="recipe__quantity">${ing.quantity}</div>
               <div class="recipe__description">
-                <span class="recipe__unit">g</span>
-                pasta
+                <span class="recipe__unit">${ing.unit}</span>
+                ${ing.description}
               </div>
             </li>
               `;
-        })}
+        }).join("")}
             
           </ul>
         </div>

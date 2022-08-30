@@ -19,9 +19,12 @@
   "homepage": "https://github.com/Mahmud-Nadim/Forkify#readme",
   "devDependencies": {
     "@parcel/transformer-sass": "^2.7.0",
-    "parcel": "^2.7.0"
+    "parcel": "^2.0.0-beta.1"
   },
   "dependencies": {
-    "sass": "^1.26.10"
+    "sass": "^1.26.10",
+    "core-js": "^3.6.5",
+    "fractional": "^1.0.0",
+    "regenerator-runtime": "^0.13.7"
   }
 }
