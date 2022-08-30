@@ -4,45 +4,24 @@ import "regenerator-runtime/runtime";
 import {loadRecipe} from "./model";
 import recipeView from "./views/recipeView";
 import {getJSON} from "./helpers";
+import searchView from "./views/searchView";
+import resultsView from "./views/resultsView";
 
-const recipeContainer = document.querySelector(".recipe");
-
-// https://forkify-api.herokuapp.com/v2
-
-///////////////////////////////////////
-
+if (module.hot) {
+    module.hot.accept();
+}
 
 const controlRecipes = async function () {
     try {
         const id = window.location.hash.slice(1);
         if (!id) return;
         // 1. Loading recipe
-        recipeView._renderSpinner();
+        recipeView.renderSpinner();
         await model.loadRecipe(id);
         const {recipe} = model.state;
-        // const res = await fetch(`https://forkify-api.herokuapp.com/api/v2/recipes/${id}`
-        //     // `https://forkify-api.herokuapp.com/api/v2/recipes/5ed6604591c37cdc054bce26`
-        // );
-        // const data = await res.json();
-        //
-        // if (!res.ok) throw new Error(`${data.message} (${res.status})`);
-        // let recipe = data.data.recipe;
-        //
-        // recipe = {
-        //     id: recipe.id,
-        //     title: recipe.title,
-        //     publisher: recipe.publisher,
-        //     sourceUrl: recipe.source_url,
-        //     image: recipe.image_url,
-        //     servings: recipe.servings,
-        //     cookingTime: recipe.cooking_time,
-        //     ingredients: recipe.ingredients
-        // };
-
-        // console.log(recipe);
 
         // 2. Rendering recipe
-        recipeView.render(model.state.recipe);
+        recipeView.render(recipe);
 
     } catch (e) {
         recipeView.renderError();
@@ -51,8 +30,18 @@ const controlRecipes = async function () {
 
 const controlSearchResults = async function () {
     try {
-        await model.loadSearchResults("pizza");
-        console.log(model.state.search.results);
+        // resultsView.renderSpinner();
+        // console.log(resultsView);
+        // 1. Get search query
+        const query = searchView.getQuery();
+        if (!query) return;
+
+        // 2. Load search results
+        await model.loadSearchResults(query);
+
+        // 3. Render results
+        resultsView.render(model.state.search.results);
+
     } catch (err) {
         console.log(err);
     }
@@ -62,6 +51,7 @@ controlSearchResults();
 
 const init = function () {
     recipeView.addHandlerRender(controlRecipes);
+    searchView.addHandlerSearch(controlSearchResults);
 };
 
 init();

@@ -447,47 +447,33 @@ var _recipeView = _interopRequireDefault(require("./views/recipeView"));
 
 var _helpers = require("./helpers");
 
+var _searchView = _interopRequireDefault(require("./views/searchView"));
+
+var _resultsView = _interopRequireDefault(require("./views/resultsView"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-const recipeContainer = document.querySelector(".recipe"); // https://forkify-api.herokuapp.com/v2
-///////////////////////////////////////
+if (module.hot) {
+  module.hot.accept();
+}
 
 const controlRecipes = async function () {
   try {
     const id = window.location.hash.slice(1);
     if (!id) return; // 1. Loading recipe
 
-    _recipeView.default._renderSpinner();
+    _recipeView.default.renderSpinner();
 
     await model.loadRecipe(id);
     const {
       recipe
-    } = model.state; // const res = await fetch(`https://forkify-api.herokuapp.com/api/v2/recipes/${id}`
-    //     // `https://forkify-api.herokuapp.com/api/v2/recipes/5ed6604591c37cdc054bce26`
-    // );
-    // const data = await res.json();
-    //
-    // if (!res.ok) throw new Error(`${data.message} (${res.status})`);
-    // let recipe = data.data.recipe;
-    //
-    // recipe = {
-    //     id: recipe.id,
-    //     title: recipe.title,
-    //     publisher: recipe.publisher,
-    //     sourceUrl: recipe.source_url,
-    //     image: recipe.image_url,
-    //     servings: recipe.servings,
-    //     cookingTime: recipe.cooking_time,
-    //     ingredients: recipe.ingredients
-    // };
-    // console.log(recipe);
-    // 2. Rendering recipe
+    } = model.state; // 2. Rendering recipe
 
-    _recipeView.default.render(model.state.recipe);
+    _recipeView.default.render(recipe);
   } catch (e) {
     _recipeView.default.renderError();
   }
@@ -495,8 +481,16 @@ const controlRecipes = async function () {
 
 const controlSearchResults = async function () {
   try {
-    await model.loadSearchResults("pizza");
-    console.log(model.state.search.results);
+    // resultsView.renderSpinner();
+    // console.log(resultsView);
+    // 1. Get search query
+    const query = _searchView.default.getQuery();
+
+    if (!query) return; // 2. Load search results
+
+    await model.loadSearchResults(query); // 3. Render results
+
+    _resultsView.default.render(model.state.search.results);
   } catch (err) {
     console.log(err);
   }
@@ -506,10 +500,12 @@ controlSearchResults();
 
 const init = function () {
   _recipeView.default.addHandlerRender(controlRecipes);
+
+  _searchView.default.addHandlerSearch(controlSearchResults);
 };
 
 init();
-},{"core-js/modules/es.regexp.flags.js":"69c14483c7f90583888879597ac9d2d3","core-js/modules/web.immediate.js":"140df4f8e97a45c53c66fead1f5a9e92","./model":"aabf248f40f7693ef84a0cb99f385d1f","./views/recipeView":"bcae1aced0301b01ccacb3e6f7dfede8","./helpers":"0e8dcd8a4e1c61cf18f78e1c2563655d"}],"69c14483c7f90583888879597ac9d2d3":[function(require,module,exports) {
+},{"core-js/modules/es.regexp.flags.js":"69c14483c7f90583888879597ac9d2d3","core-js/modules/web.immediate.js":"140df4f8e97a45c53c66fead1f5a9e92","./model":"aabf248f40f7693ef84a0cb99f385d1f","./views/recipeView":"bcae1aced0301b01ccacb3e6f7dfede8","./helpers":"0e8dcd8a4e1c61cf18f78e1c2563655d","./views/searchView":"c5d792f7cac03ef65de30cc0fbb2cae7","./views/resultsView":"eacdbc0d50ee3d2819f3ee59366c2773"}],"69c14483c7f90583888879597ac9d2d3":[function(require,module,exports) {
 var global = require('../internals/global');
 
 var DESCRIPTORS = require('../internals/descriptors');
@@ -1915,7 +1911,6 @@ var _config = require("./config");
 
 var _helpers = require("./helpers");
 
-console.log(_regeneratorRuntime.async);
 const state = {
   recipe: {},
   search: {
@@ -1940,8 +1935,7 @@ const loadRecipe = async function (id) {
       servings: recipe.servings,
       cookingTime: recipe.cooking_time,
       ingredients: recipe.ingredients
-    };
-    console.log(state.recipe);
+    }; // console.log(state.recipe);
   } catch (e) {
     // Temporary error handling
     throw `${e} ❌`;
@@ -2774,72 +2768,14 @@ var _icons = _interopRequireDefault(require("url:../../img/icons.svg"));
 
 var _fractional = require("fractional");
 
+var _View = _interopRequireDefault(require("./View"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-class RecipeView {
-  #parentElement = document.querySelector(".recipe");
-  #data;
-  #errorMessage = "We could not find that recipe. Please try another one.";
-  #message = "";
-
-  render(data) {
-    this.#data = data;
-
-    const markup = this._generateMarkup();
-
-    this.#clear();
-    this.#parentElement.insertAdjacentHTML("afterbegin", markup);
-  }
-
-  #clear() {
-    this.#parentElement.innerHTML = "";
-  }
-
-  _renderSpinner = function () {
-    const markup = `
-      <div class="spinner">
-          <svg>
-            <use href="${_icons.default}#icon-loader"></use>
-          </svg>
-        </div>
-`;
-    this.#clear();
-    this.#parentElement.insertAdjacentHTML("afterbegin", markup);
-  };
-
-  renderError() {
-    let message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.#errorMessage;
-    const markup = `
-         <div class="error">
-            <div>
-              <svg>
-                <use href="${_icons.default}#icon-alert-triangle"></use>
-              </svg>
-            </div>
-            <p>${message}</p>
-          </div> -->
-
-`;
-    this.#clear();
-    this.#parentElement.insertAdjacentHTML("afterbegin", markup);
-  }
-
-  renderMessage() {
-    let message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.#message;
-    const markup = `
-         <div class="error">
-            <div>
-              <svg>
-                <use href="${_icons.default}#icon-smile"></use>
-              </svg>
-            </div>
-            <p>${message}</p>
-          </div> -->
-
-`;
-    this.#clear();
-    this.#parentElement.insertAdjacentHTML("afterbegin", markup);
-  }
+class RecipeView extends _View.default {
+  _parentElement = document.querySelector(".recipe");
+  _errorMessage = "We could not find that recipe. Please try another one.";
+  _message = "";
 
   addHandlerRender(handler) {
     ["hashchange", "load"].forEach(ev => window.addEventListener(ev, handler));
@@ -2848,9 +2784,9 @@ class RecipeView {
   _generateMarkup() {
     return `
          <figure class="recipe__fig">
-          <img src="${this.#data.image}" alt="Tomato" class="recipe__img" />
+          <img src="${this._data.image}" alt="Tomato" class="recipe__img" />
           <h1 class="recipe__title">
-            <span>${this.#data.title}</span>
+            <span>${this._data.title}</span>
           </h1>
         </figure> 
           <div class="recipe__details">
@@ -2858,14 +2794,14 @@ class RecipeView {
             <svg class="recipe__info-icon">
               <use href="${_icons.default}#icon-clock"></use>
             </svg>
-            <span class="recipe__info-data recipe__info-data--minutes">${this.#data.cookingTime}</span>
+            <span class="recipe__info-data recipe__info-data--minutes">${this._data.cookingTime}</span>
             <span class="recipe__info-text">minutes</span>
           </div>
           <div class="recipe__info">
             <svg class="recipe__info-icon">
               <use href="${_icons.default}#icon-users"></use>
             </svg>
-            <span class="recipe__info-data recipe__info-data--people">${this.#data.servings}</span>
+            <span class="recipe__info-data recipe__info-data--people">${this._data.servings}</span>
             <span class="recipe__info-text">servings</span>
 
             <div class="recipe__info-buttons">
@@ -2882,10 +2818,7 @@ class RecipeView {
             </div>
           </div>
 
-          <div class="recipe__user-generated">
-            <svg>
-              <use href="${_icons.default}#icon-user"></use>
-            </svg>
+          <div class="recipe__user-generated"> 
           </div>
           <button class="btn--round">
             <svg class="">
@@ -2897,7 +2830,7 @@ class RecipeView {
         <div class="recipe__ingredients">
           <h2 class="heading--2">Recipe ingredients</h2>
           <ul class="recipe__ingredient-list">
-          ${this.#data.ingredients.map(ing => this._generateMarkupIngredient(ing))}
+          ${this._data.ingredients.map(ing => this._generateMarkupIngredient(ing))}
             
           </ul>
         </div>
@@ -2906,12 +2839,12 @@ class RecipeView {
           <h2 class="heading--2">How to cook it</h2>
           <p class="recipe__directions-text">
             This recipe was carefully designed and tested by
-            <span class="recipe__publisher">${this.#data.publisher}</span>. Please check out
+            <span class="recipe__publisher">${this._data.publisher}</span>. Please check out
             directions at their website.
           </p>
           <a
             class="btn--small recipe__btn"
-            href=${this.#data.sourceUrl}
+            href=${this._data.sourceUrl}
             target="_blank"
           >
             <span>Directions</span>
@@ -2946,7 +2879,7 @@ exports.RecipeView = RecipeView;
 var _default = new RecipeView();
 
 exports.default = _default;
-},{"url:../../img/icons.svg":"e20378ecabe1290eb832a884d6e8397f","fractional":"ddbc156a7c16e105c8df04e9fdec967d"}],"e20378ecabe1290eb832a884d6e8397f":[function(require,module,exports) {
+},{"url:../../img/icons.svg":"e20378ecabe1290eb832a884d6e8397f","fractional":"ddbc156a7c16e105c8df04e9fdec967d","./View":"61b7a1b097e16436be3d54c2f1828c73"}],"e20378ecabe1290eb832a884d6e8397f":[function(require,module,exports) {
 module.exports = require('./bundle-url').getBundleURL() + require('./relative-path')("f54b794f124020dd", "6bafa1d42cfbc0a2");
 },{"./bundle-url":"2146da1905b95151ed14d455c784e7b7","./relative-path":"1b9943ef25c7bbdf0dd1b9fa91880a6c"}],"2146da1905b95151ed14d455c784e7b7":[function(require,module,exports) {
 "use strict";
@@ -3428,6 +3361,176 @@ Fraction.primeFactors = function(n)
 
 module.exports.Fraction = Fraction
 
-},{}]},{},["c3e40cf568eaa078ac721d80014847a7","5985c56c487cf15770880ece02656bf4","175e469a7ea7db1c8c0744d04372621f"], null)
+},{}],"61b7a1b097e16436be3d54c2f1828c73":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _icons = _interopRequireDefault(require("url:../../img/icons.svg"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class View {
+  _data;
+
+  render(data) {
+    if (!data || Array.isArray(data) && data.length === 0) return this.renderError();
+    console.log(data);
+    this._data = data;
+
+    const markup = this._generateMarkup();
+
+    this._clear();
+
+    this._parentElement.insertAdjacentHTML("afterbegin", markup);
+  }
+
+  _clear() {
+    this._parentElement.innerHTML = "";
+  }
+
+  renderSpinner = function () {
+    const markup = `
+      <div class="spinner">
+          <svg>
+            <use href="${_icons.default}#icon-loader"></use>
+          </svg>
+        </div>
+`;
+
+    this._clear();
+
+    this._parentElement.insertAdjacentHTML("afterbegin", markup);
+  };
+
+  renderError() {
+    let message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this._errorMessage;
+    console.log("Render error is running");
+    const markup = `
+         <div class="error">
+            <div>
+              <svg>
+                <use href="${_icons.default}#icon-alert-triangle"></use>
+              </svg>
+            </div>
+            <p>${message}</p>
+          </div> -->
+
+`;
+
+    this._clear();
+
+    console.log(this._parentElement);
+
+    this._parentElement.insertAdjacentHTML("afterbegin", markup);
+  }
+
+  renderMessage() {
+    let message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this._message;
+    const markup = `
+         <div class="error">
+            <div>
+              <svg>
+                <use href="${_icons.default}#icon-smile"></use>
+              </svg>
+            </div>
+            <p>${message}</p>
+          </div> -->
+
+`;
+
+    this._clear();
+
+    this._parentElement.insertAdjacentHTML("afterbegin", markup);
+  }
+
+}
+
+exports.default = View;
+},{"url:../../img/icons.svg":"e20378ecabe1290eb832a884d6e8397f"}],"c5d792f7cac03ef65de30cc0fbb2cae7":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+class searchView {
+  _parentElement = document.querySelector(".search");
+
+  getQuery() {
+    const query = this._parentElement.querySelector(".search__field").value;
+
+    this._clearInput();
+
+    return query;
+  }
+
+  _clearInput() {
+    this._parentElement.querySelector(".search__field").value = "";
+  }
+
+  addHandlerSearch(handler) {
+    this._parentElement.addEventListener("submit", function (e) {
+      e.preventDefault();
+      handler();
+    });
+  }
+
+}
+
+var _default = new searchView();
+
+exports.default = _default;
+},{}],"eacdbc0d50ee3d2819f3ee59366c2773":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _View = _interopRequireDefault(require("./View"));
+
+var _icons = _interopRequireDefault(require("url:../../img/icons.svg"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class ResultsView extends _View.default {
+  _parentElement = document.querySelector(".results");
+  _errorMessage = "No recipes found for your query. Please try again ;";
+  _message = "";
+
+  _generateMarkup() {
+    return this._data.map(recipe => this._generatePreview(recipe)).join("");
+  }
+
+  _generatePreview(result) {
+    return `
+        <li class="preview">
+    <a class="preview__link" href="#${result.id}">
+        <figure class="preview__fig">
+            <img src="${result.image}" alt="Test"/>
+        </figure>
+        <div class="preview__data">
+            <h4 class="preview__name">
+                ${result.title}
+            </h4> <br>
+            <p class="preview__publisher">${result.publisher}</p>
+           </div>
+          </a>
+         </li>
+        `;
+  }
+
+}
+
+var _default = new ResultsView();
+
+exports.default = _default;
+},{"./View":"61b7a1b097e16436be3d54c2f1828c73","url:../../img/icons.svg":"e20378ecabe1290eb832a884d6e8397f"}]},{},["c3e40cf568eaa078ac721d80014847a7","5985c56c487cf15770880ece02656bf4","175e469a7ea7db1c8c0744d04372621f"], null)
 
 //# sourceMappingURL=controller.7d25b0d5.js.map
