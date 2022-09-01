@@ -7,15 +7,18 @@ import {getJSON} from "./helpers";
 import searchView from "./views/searchView";
 import resultsView from "./views/resultsView";
 import paginationView from "./views/paginationView";
+// import {resolve} from "../../dist/controller.7d25b0d5";
 
-if (module.hot) {
-    module.hot.accept();
-}
+// if (module.hot) {
+//     module.hot.accept();
+// }
 
 const controlRecipes = async function () {
     try {
         const id = window.location.hash.slice(1);
         if (!id) return;
+        // 0. Update results view to mark selected search result
+        resultsView.update(model.getSearchResults());
         // 1. Loading recipe
         recipeView.renderSpinner();
         await model.loadRecipe(id);
@@ -62,8 +65,16 @@ const controlPagination = function (goToPage) {
     paginationView.render(model.state.search);
 };
 
+const controlServings = function (newServings) {
+    // Update the recipe servings (in state)
+    model.updateServings(newServings);
+    // Update the recipe view
+    recipeView.update(model.state.recipe);
+};
+
 const init = function () {
     recipeView.addHandlerRender(controlRecipes);
+    recipeView.addHandlerUpdateServings(controlServings);
     searchView.addHandlerSearch(controlSearchResults);
     paginationView.addHandlerClick(controlPagination);
 };
