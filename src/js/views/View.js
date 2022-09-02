@@ -16,7 +16,7 @@ export default class View {
     update(data) {
         // if (!data || (Array.isArray(data) && data.length === 0)) return this.renderError();
 
-        console.log(data);
+        // console.log("From update method: ", data);
         this._data = data;
         const newMarkup = this._generateMarkup();
 
@@ -32,7 +32,7 @@ export default class View {
             }
             // Update changed attributes
             if (!newEl.isEqualNode(curEl)) {
-                console.log(curEl.attributes);
+                // console.log(curEl.attributes);
                 Array.from(newEl.attributes).forEach(attr => curEl.setAttribute(attr.name, attr.value));
             }
         });
@@ -55,7 +55,7 @@ export default class View {
     };
 
     renderError(message = this._errorMessage) {
-        console.log("Render error is running");
+        // console.log("Render error is running");
         const markup = `
          <div class="error">
             <div>
@@ -68,7 +68,7 @@ export default class View {
 
 `;
         this._clear();
-        console.log(this._parentElement);
+        // console.log(this._parentElement);
         this._parentElement.insertAdjacentHTML("afterbegin", markup);
     }
 
